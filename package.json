@@ -1,13 +1,16 @@
 {
   "name": "ulujs",
-  "version": "0.11.12",
+  "version": "1.0.0alpha",
   "description": "Ulu AVM Smart Contract Library",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "temptemp3",
+  "contributors": [
+    "EasyTiger909"
+  ],
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
@@ -21,8 +24,22 @@
     "npm": ">=10.2.0",
     "node": ">=20.9.0"
   },
-  "types": "./types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/types/index.d.ts",
   "dependencies": {
-    "arccjs": "^2.10.9"
+    "algosdk": "^3.0.0",
+    "buffer": "^6.0.3",
+    "sha512": "^0.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.11.1",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.10.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.0"
   }
 }
