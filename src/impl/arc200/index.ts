@@ -2,44 +2,35 @@ import algosdk from 'algosdk'
 import schema from '../../abi/arc200/index.js'
 import schema2 from '../../abi/arc200nomd/index.js'
 import { Contract, ContractBase } from '../../lib/arccjs/contract.js'
+import { EventQuery, MethodResponse } from '../../lib/arccjs/types.js'
 import { oneAddress } from '../../util.js'
 
 const BalanceBoxCost = 28500n
 const AllowanceBoxCost = 28100n
-
-type MethodResponse<T = unknown> =
-  | { success: true; returnValue: T }
-  | { success: false; error: unknown }
-
-type EventQuery = {
-  minRound?: bigint
-  maxRound?: bigint
-  address?: string
-  round?: bigint
-  txid?: string
-  sender?: string
-  limit?: number
-}
-
-type Arc200Options = {
-  acc: algosdk.Account
-  simulate: boolean
-  formatBytes: boolean
-  waitForConfirmation: boolean
-  logToConsole: boolean
-}
 
 /**
  * This class provides methods for interacting with arc200 contract tokens.
  * @class
  */
 class arc200 extends ContractBase {
-  opts: Arc200Options
+  opts: {
+    acc: algosdk.Account
+    simulate: boolean
+    formatBytes: boolean
+    waitForConfirmation: boolean
+    logToConsole: boolean
+  }
   constructor(
     contractId: bigint | number,
     algodClient: algosdk.Algodv2,
     indexerClient: algosdk.Indexer,
-    options?: Partial<Arc200Options>
+    options?: Partial<{
+      acc: algosdk.Account
+      simulate: boolean
+      formatBytes: boolean
+      waitForConfirmation: boolean
+      logToConsole: boolean
+    }>
   ) {
     const acc = options?.acc ?? {
       addr: algosdk.Address.fromString(oneAddress),
@@ -343,7 +334,7 @@ export const safe_arc200_transfer = async (
   ci: arc200,
   addrTo: string,
   amt: bigint,
-  options: Arc200Options
+  options: typeof ci.opts
 ): Promise<MethodResponse<boolean>> => {
   try {
     const addrFrom = ci.getSender().toString()
@@ -400,7 +391,7 @@ export const safe_arc200_transferFrom = async (
   addrFrom: string,
   addrTo: string,
   amt: bigint,
-  options: Arc200Options
+  options: typeof ci.opts
 ): Promise<MethodResponse<boolean>> => {
   try {
     const contract = new Contract(
@@ -459,7 +450,7 @@ export const safe_arc200_approve = async (
   ci: arc200,
   addrSpender: string,
   amt: bigint,
-  options: Arc200Options
+  options: typeof ci.opts
 ): Promise<MethodResponse<boolean>> => {
   try {
     const contract = new Contract(

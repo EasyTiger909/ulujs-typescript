@@ -1,45 +1,36 @@
 import algosdk from 'algosdk'
 import schema from '../../abi/arc72/index.js'
 import { Contract, ContractBase } from '../../lib/arccjs/contract.js'
+import { EventQuery, MethodResponse } from '../../lib/arccjs/types.js'
 import { oneAddress, prepareString } from '../../util.js'
 
 const BalanceBoxCost = 28500n
 const AllowanceBoxCost = 28500n
-
-type MethodResponse<T = unknown> =
-  | { success: true; returnValue: T }
-  | { success: false; error: unknown }
-
-type Arc72Options = {
-  acc: algosdk.Account
-  simulate: boolean
-  formatBytes: boolean
-  waitForConfirmation: boolean
-  logToConsole: boolean
-}
-
-type EventQuery = {
-  minRound?: bigint
-  maxRound?: bigint
-  address?: string
-  round?: bigint
-  txid?: string
-  sender?: string
-  limit?: number
-}
 
 /**
  * This class provides methods for interacting with arc72 contract NFTs.
  * @class
  */
 class arc72 extends ContractBase {
-  opts: Arc72Options
+  opts: {
+    acc: algosdk.Account
+    simulate: boolean
+    formatBytes: boolean
+    waitForConfirmation: boolean
+    logToConsole: boolean
+  }
 
   constructor(
     contractId: bigint | number,
     algodClient: algosdk.Algodv2,
     indexerClient: algosdk.Indexer,
-    options?: Partial<Arc72Options>
+    options?: Partial<{
+      acc: algosdk.Account
+      simulate: boolean
+      formatBytes: boolean
+      waitForConfirmation: boolean
+      logToConsole: boolean
+    }>
   ) {
     const acc = options?.acc ?? {
       addr: algosdk.Address.fromString(oneAddress),
@@ -158,7 +149,7 @@ export const safe_arc72_transferFrom = async (
   addrFrom: string,
   addrTo: string,
   tid: bigint,
-  options: Arc72Options
+  options: typeof ci.opts
 ): Promise<MethodResponse<boolean>> => {
   try {
     const addrSpender = ci.getSender().toString()
@@ -214,7 +205,7 @@ export const safe_arc72_approve = async (
   ci: arc72,
   addr: string,
   tid: bigint,
-  options: Arc72Options
+  options: typeof ci.opts
 ): Promise<MethodResponse<boolean>> => {
   try {
     const addrSelf = ci.getSender().toString()
@@ -259,7 +250,7 @@ export const safe_arc72_setApprovalForAll = async (
   ci: arc72,
   addr: string,
   approve: boolean,
-  options: Arc72Options
+  options: typeof ci.opts
 ): Promise<MethodResponse<boolean>> => {
   try {
     const addrSelf = ci.getSender().toString()

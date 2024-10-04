@@ -9,7 +9,6 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strictNullChecks": true,
-    "sourceMap": true,
     "rootDir": "src",
     "outDir": "dist",
     "skipLibCheck": true

@@ -1,6 +1,6 @@
 # ulujs
 
-`ulujs` is a JavaScript & Typescript library for interacting with smart contracts on the AVM blockchains. It provides a convenient interface for interacting with the smart contract tokens, nfts, and dexes.
+`ulujs` is a JavaScript & Typescript library for interacting with smart contracts on AVM blockchains. It provides a convenient interface for interacting with smart contract tokens, NFTs, and DEXes.
 
 ## Features
 
@@ -18,18 +18,18 @@ npm install ulujs
 
 ## Usage
 
-### Standards
+### Standard Contracts
 
-- `arc200` - ARC200 Smart Contract Token
-- `arc72` - ARC72 Smart Contract NFT
+- `arc200` - ARC200 Smart Contract Token [https://arc.algorand.foundation/ARCs/arc-0200]
+- `arc72` - ARC72 Smart Contract NFT [https://arc.algorand.foundation/ARCs/arc-0072]
 
-Import and initialize the `ulujs` library in your project:
+#### Import and initialize the `ulujs` library in your project:
 
 ```javascript
 import algosdk from 'algosdk'
 import { arc200 } from 'ulujs'
 
-// Initialize Algod client
+// Initialize Algod and Indexer clients
 const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort)
 const indexerClient = new algosdk.Indexer(
   indexerToken,
@@ -38,7 +38,7 @@ const indexerClient = new algosdk.Indexer(
 )
 ```
 
-Initializing and using ARC200 Contract instance
+#### Initialize contract instance using `arc200` (standard):
 
 ```javascript
 const tokenId = 123456 // Replace with your token ID
@@ -46,14 +46,15 @@ const tokenId = 123456 // Replace with your token ID
 // Initialize Read-Only Contract Instance
 const contract = new arc200(tokenId, algodClient, indexerClient)
 
-// Read Only Methods
+// Read-Only Methods
 const response = await contract.arc200_allowance('OWNER', 'SPENDER')
-if (response.success)
+if (response.success) {
   console.log(
-    `Spender allowed to spend ${response.returnValue} of owners token`
+    `Spender allowed to spend ${response.returnValue} of owner's token`
   )
+}
 
-// Initialized Contract Instance with a sender Account
+// Initialized Contract Instance with a sender account
 const senderAccount = new algosdk.mnemonicToSecretKey('sender mnemonic ...')
 const contract = new arc200(tokenId, algodClient, indexerClient, {
   acc: senderAccount,
@@ -63,9 +64,9 @@ const contract = new arc200(tokenId, algodClient, indexerClient, {
 const response = await contract.arc200_transfer('RECEIVER', 1000n)
 ```
 
-Query Events
+#### Query Events
 
-`minRound` and `maxRound` may be used to specify a range of rounds to query events from. `address` may be used to filter events by address. `round` and `txid` may be used to retrieve events from a specific round or transaction ID.
+`minRound` and `maxRound` can be used to specify a range of rounds to query events from. `address` can be used to filter events by address. `round` and `txid` can be used to retrieve events from a specific round or transaction ID.
 
 ```javascript
 // Define Optional Filters
@@ -76,7 +77,7 @@ const events = contract.arc200_Transfer(query)
 ### Predefined Contracts
 
 - `hsv2` - HumbleSwap Protocol (v2)
-- `swap200` - ARC200 Bases Liqudity Pool (AMM)
+- `swap200` - ARC200 Based Liqudity Pool (AMM)
 - `nt200` - ARC200 Wrapped Network Token (wVOI)
 
 ```javascript
@@ -90,13 +91,13 @@ const contract = new hsv2(tokenId, algodClient, indexerClient)
 
 ### User-Defined Contracts
 
-Instantiate a `Contract` from its ABI and access its methods and event queries directly.
+#### Option 1: Initialize a `Contract` from its ABI and access its methods and event queries directly.
 
 ```javascript
 import { Contract } from 'ulujs'
 import { abiSpec } from 'some/abi'
 
-// Initialize Contract instance with import ABI
+// Initialize Contract instance with imported ABI
 const tokenId = 123456 // Replace with your token ID
 const contract = new Contract(tokenId, algodClient, indexerClient, abiSpec)
 
@@ -106,15 +107,20 @@ if (response.success) {
 } else {
   console.error(response.error)
 }
+
+const results = contract.someEvent({ minRound: 1234n })
+console.log(results)
 ```
 
-Extend the `ContractBase` class with strongly typed methods
+#### Option 2: Extend the `ContractBase` class with strongly typed methods.
+
+This allows for extra logic and validation to be added.
 
 ```javascript
-import { ContractBase } from 'ulujs'
+import { ContractBase } from 'ulujs';
 
 // Define a new Class for instances of a custom contract
-class SomeContract extends ContractBase
+class SomeContract extends ContractBase {
   constructor(
     contractId: bigint | number,
     algodClient: algosdk.Algodv2,
@@ -125,19 +131,19 @@ class SomeContract extends ContractBase
       algodClient,
       indexerClient,
       schema
-    )
+    );
     //...
-
+  }
   async some_method() {
-    return await this.callMethod<string>('some_method')
+    return await this.callMethod<string>('some_method');
   }
   // define events and other logic or validation needed
-
+}
 ```
 
 ## API Reference
 
-Each method provided by `ulujs` offers specific functionalities:
+Each contract handled by `ulujs` also exposes the following:
 
 - `callMethod(methodName, ...args)`: Calls a method by name of the smart contract.
 - `callMethod<returnType>((methodName, ...args)`: Define return type if using Typescript

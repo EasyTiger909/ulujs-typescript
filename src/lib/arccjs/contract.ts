@@ -1,22 +1,9 @@
 import algosdk from 'algosdk'
 import { Buffer } from 'buffer'
 import { fetchEvents } from './events.js'
+import { EventQuery, MethodResponse } from './types.js'
 import { makeARC2Prefix, oneAddress, prepareString } from './util.js'
 import { version } from './version.js'
-
-type MethodResponse<T = unknown> =
-  | { success: true; returnValue: T }
-  | { success: false; error: unknown }
-
-type EventQuery = {
-  minRound?: bigint
-  maxRound?: bigint
-  address?: string
-  round?: bigint
-  txid?: string
-  sender?: string
-  limit?: number
-}
 
 // TODO allow switching between mainnet and testnet
 const ctcInfoBc200 = 376092 // safe200 Voimain

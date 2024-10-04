@@ -1,17 +1,7 @@
 import algosdk from 'algosdk'
-import { ARC28Event } from 'algosdk/dist/types/abi/event'
 import { Buffer } from 'buffer'
 import sha512 from 'js-sha512'
-
-type EventQuery = {
-  minRound?: bigint
-  maxRound?: bigint
-  address?: string
-  round?: bigint
-  txid?: string
-  sender?: string
-  limit?: number
-}
+import { ARC28Event, EventQuery } from './types'
 
 const genericHash = (arr: sha512.Message) => {
   return sha512.sha512_256.array(arr)
