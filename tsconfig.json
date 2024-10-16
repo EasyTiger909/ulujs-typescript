@@ -11,7 +11,8 @@
     "strictNullChecks": true,
     "rootDir": "src",
     "outDir": "dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "declarationDir": "dist/types"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "tests"]

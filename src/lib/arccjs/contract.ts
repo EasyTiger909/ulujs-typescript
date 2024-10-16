@@ -355,7 +355,7 @@ export abstract class ContractBase {
     args: algosdk.ABIValue[]
   ): T {
     const appArgs = args.map((arg, index) => {
-      return algosdk.ABIType.from(abiMethod.args[index].type as string).encode(
+      return algosdk.ABIType.from(abiMethod.args[index].type.toString()).encode(
         arg
       )
     })
@@ -378,7 +378,7 @@ export abstract class ContractBase {
       // Encode arguments
       const encodedArgs = args.map((arg, index) => {
         return algosdk.ABIType.from(
-          abiMethod.args[index].type as string
+          abiMethod.args[index].type.toString()
         ).encode(arg)
       })
 
@@ -850,7 +850,7 @@ export abstract class ContractBase {
       // Encode arguments
       const encodedArgs = args.map((arg, index) => {
         return algosdk.ABIType.from(
-          abiMethod.args[index].type as string
+          abiMethod.args[index].type.toString()
         ).encode(arg)
       })
 
@@ -1000,14 +1000,12 @@ export abstract class ContractBase {
       }
 
       // end build transaction list for group
-      const group: algosdk.SignedTransaction[] = algosdk
-        .assignGroupID(txns)
-        .map((txn) => {
-          return algosdk.decodeMsgpack(
-            algosdk.encodeUnsignedTransaction(txn),
-            algosdk.SignedTransaction
-          )
-        })
+      const group = algosdk.assignGroupID(txns).map((txn) => {
+        return algosdk.decodeMsgpack(
+          algosdk.encodeUnsignedSimulateTransaction(txn),
+          algosdk.SignedTransaction
+        )
+      })
 
       const txnGroup = new algosdk.modelsv2.SimulateRequestTransactionGroup({
         txns: group,
@@ -1054,7 +1052,7 @@ export abstract class ContractBase {
         response.txnGroups[0]?.txnResults?.[index]?.txnResult?.logs?.pop() ??
         null
       const rlog_ui = rlog
-        ? Uint8Array.from(Buffer.from(rlog.toString(), 'base64'))
+        ? Uint8Array.from(Buffer.from(rlog))
         : new Uint8Array()
       const res_ui = rlog_ui.slice(4)
       // -----------------------------------------

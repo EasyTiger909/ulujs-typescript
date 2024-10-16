@@ -94,19 +94,15 @@ class arc72 extends ContractBase {
   }
 
   async arc72_approve(addr: string, tokenId: bigint) {
-    return await this.callMethod<void>('arc72_approve', addr, tokenId)
+    return safe_arc72_approve(this, addr, tokenId, this.opts)
   }
 
   async arc72_setApprovalForAll(spender: string, approve: boolean) {
-    return await this.callMethod<void>(
-      'arc72_setApprovalForAll',
-      spender,
-      approve
-    )
+    return safe_arc72_setApprovalForAll(this, spender, approve, this.opts)
   }
 
   async arc72_transferFrom(from: string, to: string, tokenId: bigint) {
-    return await this.callMethod<void>('arc72_transferFrom', from, to, tokenId)
+    return safe_arc72_transferFrom(this, from, to, tokenId, this.opts)
   }
 
   // Events
@@ -150,7 +146,7 @@ export const safe_arc72_transferFrom = async (
   addrTo: string,
   tid: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<boolean>> => {
+): Promise<MethodResponse<{ txId: string }>> => {
   try {
     const addrSpender = ci.getSender().toString()
     const contract = new Contract(
@@ -179,12 +175,12 @@ export const safe_arc72_transferFrom = async (
         `TransferFrom spender: ${addrSpender} from: ${addrFrom} to: ${addrTo} token: ${tid}`
       )
 
-    const arc72_transferFrom = contract.arc72_transferFrom as (
-      addrFrom: string,
-      addrTo: string,
-      tid: bigint
-    ) => Promise<MethodResponse<boolean>>
-    return await arc72_transferFrom(addrFrom, addrTo, tid)
+    return await contract.callMethod<{ txId: string }>(
+      'arc72_transferFrom',
+      addrFrom,
+      addrTo,
+      tid
+    )
   } catch (error) {
     console.log(error)
     return { success: false, error }
@@ -206,7 +202,7 @@ export const safe_arc72_approve = async (
   addr: string,
   tid: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<boolean>> => {
+): Promise<MethodResponse<{ txId: string }>> => {
   try {
     const addrSelf = ci.getSender().toString()
     const contract = new Contract(
@@ -226,11 +222,11 @@ export const safe_arc72_approve = async (
         `Approval from: ${addrSelf} controller: ${addr} token: ${tid}`
       )
 
-    const arc72_approve = contract.arc72_approve as (
-      addr: string,
-      tid: bigint
-    ) => Promise<MethodResponse<boolean>>
-    return await arc72_approve(addr, tid)
+    return await contract.callMethod<{ txId: string }>(
+      'arc72_approve',
+      addr,
+      tid
+    )
   } catch (error) {
     console.log(error)
     return { success: false, error }
@@ -251,7 +247,7 @@ export const safe_arc72_setApprovalForAll = async (
   addr: string,
   approve: boolean,
   options: typeof ci.opts
-): Promise<MethodResponse<boolean>> => {
+): Promise<MethodResponse<{ txId: string }>> => {
   try {
     const addrSelf = ci.getSender().toString()
     const contract = new Contract(
@@ -275,11 +271,11 @@ export const safe_arc72_setApprovalForAll = async (
       `Approval from: ${addrSelf} controller: ${addr} approve: ${approve}`
     )
 
-    const arc72_setApprovalForAll = contract.arc72_setApprovalForAll as (
-      addr: string,
-      approve: boolean
-    ) => Promise<MethodResponse<boolean>>
-    return await arc72_setApprovalForAll(addr, approve)
+    return contract.callMethod<{ txId: string }>(
+      'arc72_setApprovalForAll',
+      addr,
+      approve
+    )
   } catch (error) {
     console.log(error)
     return { success: false, error }

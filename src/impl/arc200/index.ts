@@ -249,16 +249,9 @@ export const safe_hasBalance = async (ci: arc200, addr: string) => {
     schema2
   )
 
-  const safeHasBalance = contract1.hasBalance as (
-    addr: string
-  ) => Promise<MethodResponse<boolean>>
-  const safeHasBalance2 = contract2.hasBalance as (
-    addr: string
-  ) => Promise<MethodResponse<boolean>>
-
   const hasBalanceP = await Promise.all([
-    safeHasBalance(addr),
-    safeHasBalance2(addr),
+    contract1.callMethod<boolean>('hasBalance', addr),
+    contract2.callMethod<boolean>('hasBalance', addr),
   ])
   const hasBalanceR = hasBalanceP[0].success ? hasBalanceP[0] : hasBalanceP[1]
   if (hasBalanceR.success) {
@@ -295,19 +288,10 @@ export const safe_hasAllowance = async (
     ci.indexerClient,
     schema2
   )
-  const safeHasAllowance = contract1.hasAllowance as (
-    addrFrom: string,
-    addrSpender: string
-  ) => Promise<MethodResponse<boolean>>
-
-  const safeHasAllowance2 = contract2.hasAllowance as (
-    addrFrom: string,
-    addrSpender: string
-  ) => Promise<MethodResponse<boolean>>
 
   const hasAllowanceR2 = await Promise.all([
-    safeHasAllowance(addrFrom, addrSpender),
-    safeHasAllowance2(addrFrom, addrSpender),
+    contract1.callMethod<boolean>('hasAllowance', addrFrom, addrSpender),
+    contract2.callMethod<boolean>('hasAllowance', addrFrom, addrSpender),
   ])
   const hasAllowanceR = hasAllowanceR2[0].success
     ? hasAllowanceR2[0]
@@ -335,7 +319,7 @@ export const safe_arc200_transfer = async (
   addrTo: string,
   amt: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<boolean>> => {
+): Promise<MethodResponse<{ txId: string }>> => {
   try {
     const addrFrom = ci.getSender().toString()
 
@@ -369,7 +353,7 @@ export const safe_arc200_transfer = async (
     if (options.logToConsole)
       console.log(`Transfer from: ${addrFrom} to: ${addrTo} amount: ${amt}`)
 
-    return contract.callMethod('arc200_transfer', addrTo, amt)
+    return contract.callMethod<{ txId: string }>('arc200_transfer', addrTo, amt)
   } catch (error) {
     console.error(error)
     return { success: false, error }
@@ -392,7 +376,7 @@ export const safe_arc200_transferFrom = async (
   addrTo: string,
   amt: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<boolean>> => {
+): Promise<MethodResponse<{ txId: string }>> => {
   try {
     const contract = new Contract(
       ci.contractId,
@@ -430,7 +414,12 @@ export const safe_arc200_transferFrom = async (
         `TransferFrom spender: ${addrSpender} from: ${addrFrom} to: ${addrTo} amount: ${amt}`
       )
 
-    return contract.callMethod('arc200_transferFrom', addrFrom, addrTo, amt)
+    return contract.callMethod<{ txId: string }>(
+      'arc200_transferFrom',
+      addrFrom,
+      addrTo,
+      amt
+    )
   } catch (error) {
     console.error(error)
     return { success: false, error }
@@ -451,7 +440,7 @@ export const safe_arc200_approve = async (
   addrSpender: string,
   amt: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<boolean>> => {
+): Promise<MethodResponse<{ txId: string }>> => {
   try {
     const contract = new Contract(
       ci.contractId,
@@ -475,7 +464,11 @@ export const safe_arc200_approve = async (
         `Approval from: ${addrFrom} spender: ${addrSpender} amount: ${amt}`
       )
 
-    return await contract.callMethod('arc200_approve', addrSpender, amt)
+    return await contract.callMethod<{ txId: string }>(
+      'arc200_approve',
+      addrSpender,
+      amt
+    )
   } catch (error) {
     console.error(error)
     return { success: false, error }
