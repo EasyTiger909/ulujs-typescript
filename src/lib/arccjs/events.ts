@@ -17,9 +17,13 @@ const getEventSelector = (event: ARC28Event) => {
   ).toString('hex')
 }
 
-const decodeEventArgs = (args: { type: string }[], x: string) => {
-  const argv = Buffer.from(x, 'base64')
-  // const arg0 = argv.slice(0).toString('hex')
+const uint8ArrayToHex = (uint8array: Uint8Array) => {
+  return Array.from(uint8array)
+    .map((x) => x.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+const decodeEventArgs = (args: { type: string }[], argv: Uint8Array) => {
   let index = 4
   const encoded: unknown[] = []
   args.forEach(({ type }) => {
@@ -45,23 +49,23 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
         index += 32
         break
       case 'byte':
-        encoded.push(argv.slice(index, index + 1).toString('hex'))
+        encoded.push(uint8ArrayToHex(argv.slice(index, index + 1)))
         index += 1
         break
       case 'byte[8]':
-        encoded.push(argv.slice(index, index + 8).toString('hex'))
+        encoded.push(uint8ArrayToHex(argv.slice(index, index + 8)))
         index += 8
         break
       case 'byte[32]':
-        encoded.push(argv.slice(index, index + 32).toString('hex'))
+        encoded.push(uint8ArrayToHex(argv.slice(index, index + 32)))
         index += 32
         break
       case 'byte[64]':
-        encoded.push(argv.slice(index, index + 64).toString('hex'))
+        encoded.push(uint8ArrayToHex(argv.slice(index, index + 64)))
         index += 64
         break
       case 'byte[96]':
-        encoded.push(argv.slice(index, index + 96).toString('hex'))
+        encoded.push(uint8ArrayToHex(argv.slice(index, index + 96)))
         index += 96
         break
       case '(uint64,uint64,uint64)': {
@@ -75,9 +79,9 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
         break
       }
       case '(byte,byte[256])': {
-        const a = argv.slice(index, index + 1).toString('hex')
+        const a = uint8ArrayToHex(argv.slice(index, index + 1))
         index += 1
-        const b = argv.slice(index, index + 256).toString('hex')
+        const b = uint8ArrayToHex(argv.slice(index, index + 256))
         index += 256
         encoded.push([a, b])
         break
@@ -107,25 +111,25 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
         index += 8
         const g = algosdk.bytesToBigInt(argv.slice(index, index + 8)) // uint64 stakedTokenId
         index += 8
-        const h = argv.slice(index, index + 1).toString('hex') // (byte,byte[8]) pairTokenAId
+        const h = uint8ArrayToHex(argv.slice(index, index + 1)) // (byte,byte[8]) pairTokenAId
         index += 1
-        const i = argv.slice(index, index + 8).toString('hex')
+        const i = uint8ArrayToHex(argv.slice(index, index + 8))
         index += 8
-        const j = argv.slice(index, index + 8).toString('hex') // byte[8] pairTokenASymbol
+        const j = uint8ArrayToHex(argv.slice(index, index + 8)) // byte[8] pairTokenASymbol
         index += 8
         const k = algosdk.bytesToBigInt(argv.slice(index, index + 8)) // uint64 pairTokenBId
         index += 8
-        const l = argv.slice(index, index + 8).toString('hex') // byte[8] pairTokenBSymbol
+        const l = uint8ArrayToHex(argv.slice(index, index + 8)) // byte[8] pairTokenBSymbol
         index += 8
         const m = algosdk.bytesToBigInt(argv.slice(index, index + 8)) // uint64 rewardTokenDecimals
         index += 8
-        const n = argv.slice(index, index + 8).toString('hex') // byte[8] rewardTokenSymbol
+        const n = uint8ArrayToHex(argv.slice(index, index + 8)) // byte[8] rewardTokenSymbol
         index += 8
         const o = algosdk.bytesToBigInt(argv.slice(index, index + 8)) // uint64 stakedTokenDecimals
         index += 8
         const p = algosdk.bytesToBigInt(argv.slice(index, index + 8)) // uint64 stakedTokenPoolId
         index += 8
-        const r = argv.slice(index, index + 8).toString('hex') // byte[8] stakedTokenSymbol
+        const r = uint8ArrayToHex(argv.slice(index, index + 8)) // byte[8] stakedTokenSymbol
         index += 8
         const s = algosdk.bytesToBigInt(argv.slice(index, index + 8)) // uint64 stakedTokenTotalSupply
         index += 8
@@ -158,14 +162,14 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
         break
       }
       case '(byte,byte[40])': {
-        const a = argv.slice(index, index + 1).toString('hex')
+        const a = uint8ArrayToHex(argv.slice(index, index + 1))
         index += 1
         if (a === '00') {
           const b = algosdk.bytesToBigInt(argv.slice(index, index + 8))
           encoded.push([a, b])
         } else {
-          const b = argv.slice(index, index + 8).toString('hex')
-          const c = argv.slice(index + 8, index + 40).toString('hex')
+          const b = uint8ArrayToHex(argv.slice(index, index + 8))
+          const c = uint8ArrayToHex(argv.slice(index + 8, index + 40))
           encoded.push([a, b, c])
         }
         index += 40
@@ -174,9 +178,9 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
       case 'uint64,(byte,byte[8]),uint64': {
         const a = algosdk.bytesToBigInt(argv.slice(index, index + 8))
         index += 8
-        const b = argv.slice(index, index + 1).toString('hex')
+        const b = uint8ArrayToHex(argv.slice(index, index + 1))
         index += 1
-        const c = argv.slice(index, index + 8).toString('hex')
+        const c = uint8ArrayToHex(argv.slice(index, index + 8))
         index += 8
         encoded.push([
           a,
@@ -218,7 +222,7 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
         index += 32
         const d = algosdk.encodeAddress(argv.slice(index, index + 32))
         index += 32
-        const e = argv.slice(index, index + 1).toString('hex')
+        const e = uint8ArrayToHex(argv.slice(index, index + 1))
         index += 1
         encoded.push([a, b, c, d, e])
         break
@@ -232,7 +236,9 @@ const decodeEventArgs = (args: { type: string }[], x: string) => {
 
 const getSelectors = (logs: Uint8Array[]) => {
   return logs.map((x) =>
-    Buffer.from(x.toString(), 'base64').slice(0, 4).toString('hex')
+    Array.from(x.slice(0, 4))
+      .map((y) => y.toString(16).padStart(2, '0'))
+      .join('')
   )
 }
 
@@ -391,7 +397,7 @@ export const fetchEvents = async <T extends unknown[]>(
         .map((el) =>
           decodeEventArgs(
             eventsSpec?.find((el) => el.name === name)?.args ?? [],
-            String(el)
+            el as unknown as Uint8Array
           )
         )
         .flat(),

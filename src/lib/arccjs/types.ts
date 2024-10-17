@@ -3,10 +3,10 @@ export type MethodResponse<T = unknown> =
   | { success: false; error: unknown }
 
 export type EventQuery = {
-  minRound?: bigint
-  maxRound?: bigint
+  minRound?: bigint | number
+  maxRound?: bigint | number
   address?: string
-  round?: bigint
+  round?: bigint | number
   txid?: string
   sender?: string
   limit?: number
