@@ -1,3 +1,5 @@
+import algosdk from 'algosdk'
+
 export type MethodResponse<T = unknown> =
   | { success: true; returnValue: T }
   | { success: false; error: unknown }
@@ -5,10 +7,10 @@ export type MethodResponse<T = unknown> =
 export type EventQuery = {
   minRound?: bigint | number
   maxRound?: bigint | number
-  address?: string
+  address?: string | algosdk.Address
   round?: bigint | number
   txid?: string
-  sender?: string
+  sender?: string | algosdk.Address
   limit?: number
 }
 

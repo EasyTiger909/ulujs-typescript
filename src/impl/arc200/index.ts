@@ -3,7 +3,7 @@ import schema from '../../abi/arc200/index.js'
 import schema2 from '../../abi/arc200nomd/index.js'
 import { Contract, ContractBase } from '../../lib/arccjs/contract.js'
 import { EventQuery, MethodResponse } from '../../lib/arccjs/types.js'
-import { oneAddress } from '../../util.js'
+import { aToString, oneAddress } from '../../util.js'
 
 const BalanceBoxCost = 28500n
 const AllowanceBoxCost = 28100n
@@ -74,25 +74,42 @@ class arc200 extends ContractBase {
     return await this.callMethod<bigint>('arc200_totalSupply')
   }
 
-  async arc200_balanceOf(owner: string) {
-    return await this.callMethod<bigint>('arc200_balanceOf', owner)
+  async arc200_balanceOf(owner: string | algosdk.Address) {
+    return await this.callMethod<bigint>('arc200_balanceOf', aToString(owner))
   }
 
-  async arc200_allowance(owner: string, spender: string) {
-    return await this.callMethod<bigint>('arc200_allowance', owner, spender)
+  async arc200_allowance(
+    owner: string | algosdk.Address,
+    spender: string | algosdk.Address
+  ) {
+    return await this.callMethod<bigint>(
+      'arc200_allowance',
+      aToString(owner),
+      aToString(spender)
+    )
   }
 
   // Standard with Checks
-  async arc200_transfer(to: string, value: bigint) {
-    return await safe_arc200_transfer(this, to, value, this.opts)
+  async arc200_transfer(to: string | algosdk.Address, value: bigint) {
+    return await safe_arc200_transfer(this, aToString(to), value, this.opts)
   }
 
-  async arc200_transferFrom(from: string, to: string, amount: bigint) {
-    return await safe_arc200_transferFrom(this, from, to, amount, this.opts)
+  async arc200_transferFrom(
+    from: string | algosdk.Address,
+    to: string | algosdk.Address,
+    amount: bigint
+  ) {
+    return await safe_arc200_transferFrom(
+      this,
+      aToString(from),
+      aToString(to),
+      amount,
+      this.opts
+    )
   }
 
-  async arc200_approve(spender: string, value: bigint) {
-    return await safe_arc200_approve(this, spender, value, this.opts)
+  async arc200_approve(spender: string | algosdk.Address, value: bigint) {
+    return await safe_arc200_approve(this, aToString(spender), value, this.opts)
   }
 
   // Extensions
@@ -163,11 +180,11 @@ class arc200 extends ContractBase {
     )
     return events.map((event) => {
       return {
-        txId: event[0],
+        txid: event[0],
         round: event[1],
         timestamp: event[2],
-        from: event[3],
-        to: event[4],
+        sender: event[3],
+        receiver: event[4],
         value: event[5],
       }
     })
@@ -180,7 +197,7 @@ class arc200 extends ContractBase {
     )
     return events.map((event) => {
       return {
-        txId: event[0],
+        txid: event[0],
         round: event[1],
         timestamp: event[2],
         owner: event[3],
@@ -235,7 +252,7 @@ class arc200 extends ContractBase {
  * @param addr - The address to check the balance for.
  * @returns A promise that resolves to a MethodResponse object indicating the success of the operation and the balance status.
  */
-export const safe_hasBalance = async (ci: arc200, addr: string) => {
+const safe_hasBalance = async (ci: arc200, addr: string) => {
   const contract1 = new Contract(
     ci.contractId,
     ci.algodClient,
@@ -271,7 +288,7 @@ export const safe_hasBalance = async (ci: arc200, addr: string) => {
  * @param addrSpender - The address of the spender.
  * @returns A promise that resolves to a MethodResponse object containing a boolean indicating if the allowance exists.
  */
-export const safe_hasAllowance = async (
+const safe_hasAllowance = async (
   ci: arc200,
   addrFrom: string,
   addrSpender: string
@@ -314,12 +331,12 @@ export const safe_hasAllowance = async (
  * @param options - The options for the transfer.
  * @returns A promise that resolves to a MethodResponse<boolean> indicating the success of the transfer.
  */
-export const safe_arc200_transfer = async (
+const safe_arc200_transfer = async (
   ci: arc200,
   addrTo: string,
   amt: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<{ txId: string }>> => {
+): Promise<MethodResponse<{ txid: string }>> => {
   try {
     const addrFrom = ci.getSender().toString()
 
@@ -353,7 +370,7 @@ export const safe_arc200_transfer = async (
     if (options.logToConsole)
       console.log(`Transfer from: ${addrFrom} to: ${addrTo} amount: ${amt}`)
 
-    return contract.callMethod<{ txId: string }>('arc200_transfer', addrTo, amt)
+    return contract.callMethod<{ txid: string }>('arc200_transfer', addrTo, amt)
   } catch (error) {
     console.error(error)
     return { success: false, error }
@@ -370,13 +387,13 @@ export const safe_arc200_transfer = async (
  * @param options - The options for the transfer.
  * @returns A promise that resolves to a MethodResponse<boolean> indicating the success of the transfer.
  */
-export const safe_arc200_transferFrom = async (
+const safe_arc200_transferFrom = async (
   ci: arc200,
   addrFrom: string,
   addrTo: string,
   amt: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<{ txId: string }>> => {
+): Promise<MethodResponse<{ txid: string }>> => {
   try {
     const contract = new Contract(
       ci.contractId,
@@ -414,7 +431,7 @@ export const safe_arc200_transferFrom = async (
         `TransferFrom spender: ${addrSpender} from: ${addrFrom} to: ${addrTo} amount: ${amt}`
       )
 
-    return contract.callMethod<{ txId: string }>(
+    return contract.callMethod<{ txid: string }>(
       'arc200_transferFrom',
       addrFrom,
       addrTo,
@@ -435,12 +452,12 @@ export const safe_arc200_transferFrom = async (
  * @param options - The options for the approval.
  * @returns A promise that resolves to a MethodResponse indicating the success of the approval.
  */
-export const safe_arc200_approve = async (
+const safe_arc200_approve = async (
   ci: arc200,
   addrSpender: string,
   amt: bigint,
   options: typeof ci.opts
-): Promise<MethodResponse<{ txId: string }>> => {
+): Promise<MethodResponse<{ txid: string }>> => {
   try {
     const contract = new Contract(
       ci.contractId,
@@ -464,7 +481,7 @@ export const safe_arc200_approve = async (
         `Approval from: ${addrFrom} spender: ${addrSpender} amount: ${amt}`
       )
 
-    return await contract.callMethod<{ txId: string }>(
+    return await contract.callMethod<{ txid: string }>(
       'arc200_approve',
       addrSpender,
       amt

@@ -63,7 +63,7 @@ export abstract class ContractBase {
     this.assetTransfers = []
     this.accounts = []
     this.fee = 1000
-    this.sender = acc?.addr ?? algosdk.Address.fromString(oneAddress)
+    this.sender = algosdk.Address.fromString(acc?.addr.toString() ?? oneAddress)
     this.extraTxns = []
     this.enableGroupResourceSharing = false
     this.beaconId = ctcInfoBc200
@@ -240,7 +240,7 @@ export abstract class ContractBase {
       let lastRound = status.lastRound
       while (true) {
         const pendingInfo = await this.algodClient
-          .pendingTransactionInformation(res.returnValue.txId)
+          .pendingTransactionInformation(res.returnValue.txid)
           .do()
         if (pendingInfo.confirmedRound && pendingInfo.confirmedRound > 0) {
           console.log(
@@ -304,7 +304,7 @@ export abstract class ContractBase {
     args: algosdk.ABIValue[]
   ): Promise<
     MethodResponse<{
-      txId: string
+      txid: string
       response: algosdk.modelsv2.PostTransactionsResponse
     }>
   > {
@@ -313,7 +313,7 @@ export abstract class ContractBase {
       const utxns = await this.createUtxns(abiMethod, args)
       const stxns = this.signTxns(utxns ?? [], this.sk)
       const res = await this.algodClient.sendRawTransaction(stxns).do()
-      return { success: true, returnValue: { txId: res.txid, response: res } }
+      return { success: true, returnValue: { txid: res.txid, response: res } }
     } catch (error) {
       console.error('Error in createAndSendTxn:', error)
       //throw error; // Re-throw the error after logging it

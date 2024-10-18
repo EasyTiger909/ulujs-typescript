@@ -1,3 +1,5 @@
+import { Address } from 'algosdk'
+
 /*
  * zeroAddress is the address of the account that holds 0 ALGOs and
  * cannot send transactions.
@@ -26,3 +28,6 @@ export const prepareString = (str: string) => {
     return str
   }
 }
+
+export const aToString = (addr: string | Address) =>
+  typeof addr === 'string' ? addr : addr.toString()
